@@ -1,0 +1,82 @@
+name: Deploy Laravel Project
+
+on:
+  push:
+    branches:
+      - main # Or your deployment branch, e.g., master, production
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4 # Use the latest stable version
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0 # Or a similar action like appleboy/ssh-action
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Deploy to VPS
+        env:
+          PHP_EXECUTABLE: ${{ secrets.PHP_PATH || 'php' }} # Default to 'php' if PHP_PATH secret is not set
+        run: |
+          ssh ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} << 'EOF'
+            set -e # Exit immediately if a command exits with a non-zero status.
+
+            echo "Navigating to project directory..."
+            cd ${{ secrets.REMOTE_PATH }}
+
+            echo "Activating maintenance mode..."
+            ${PHP_EXECUTABLE} artisan down || true # Allow to fail if already down
+
+            echo "Pulling latest changes from Git..."
+            git checkout main # Ensure you are on the correct branch
+            git pull origin main
+
+            echo "Installing Composer dependencies..."
+            composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
+
+            echo "Running database migrations..."
+            ${PHP_EXECUTABLE} artisan migrate --force # --force is important for non-interactive environments
+
+            echo "Clearing caches..."
+            ${PHP_EXECUTABLE} artisan optimize:clear
+
+            echo "Optimizing application..."
+            ${PHP_EXECUTABLE} artisan optimize
+            # Alternatively, cache specific things:
+            # ${PHP_EXECUTABLE} artisan config:cache
+            # ${PHP_EXECUTABLE} artisan route:cache
+            # ${PHP_EXECUTABLE} artisan view:cache
+
+            echo "Setting directory permissions..."
+            # Adjust user/group (e.g., www-data) and paths as necessary
+            # This might require sudo if the deployment user is not www-data
+            # Example: sudo chown -R www-data:www-data storage bootstrap/cache
+            # Example: sudo chmod -R 775 storage bootstrap/cache
+            # Be careful with sudo in scripts; ensure your deployment user has NOPASSWD for these specific commands if needed.
+
+            echo "Restarting PHP-FPM (example)..."
+            # This command depends on your PHP version and setup
+            # Example: sudo systemctl restart php8.2-fpm
+            # If you don't have sudo access or don't want to use it here,
+            # you might need to manually restart it or find another way.
+
+            # If using Octane or queues, you might need to restart them:
+            # echo "Restarting Octane..."
+            # ${PHP_EXECUTABLE} artisan octane:reload
+            # echo "Restarting queue worker..."
+            # ${PHP_EXECUTABLE} artisan queue:restart
+
+            echo "Deactivating maintenance mode..."
+            ${PHP_EXECUTABLE} artisan up
+
+            echo "Deployment finished successfully!"
+          EOF
