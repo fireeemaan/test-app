@@ -42,10 +42,6 @@ jobs:
             echo "Listing files (to check for artisan):"
             ls -la
 
-            echo "Pulling latest changes from Git..."
-            # git pull origin main # Or your deployment branch
-            git remote -v
-
             echo "Activating maintenance mode..."
             ${PHP_EXEC_CMD} artisan down || true # Allow to fail if already down
             echo "Installing Composer dependencies..."
@@ -56,9 +52,8 @@ jobs:
             composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
 
             echo "Pulling latest changes from Git..."
-            # git pull origin main # Or your deployment branch
-            git remote -v
-
+            git pull origin main # Or your deployment branch
+            # git remote -v
 
             echo "Running database migrations..."
             ${PHP_EXEC_CMD} artisan migrate --force
