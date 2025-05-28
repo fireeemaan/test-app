@@ -52,7 +52,8 @@ jobs:
             composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
 
             echo "Pulling latest changes from Git..."
-            git pull origin main # Or your deployment branch
+            # git pull origin main # Or your deployment branch
+            git remote -v
 
 
             echo "Running database migrations..."
