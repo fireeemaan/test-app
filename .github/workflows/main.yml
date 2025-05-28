@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4 # Use the latest stable version
+        uses: actions/checkout@v4 #Use the latest stable version
 
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.9.0 # Or a similar action like appleboy/ssh-action
