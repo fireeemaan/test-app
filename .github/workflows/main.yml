@@ -48,6 +48,7 @@ jobs:
             
             # Ensure composer is available, you might need full path or add to deployer's PATH
             # Example: /usr/local/bin/composer or ~/.composer/vendor/bin/composer
+            composer update
             composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
 
             echo "Pulling latest changes from Git..."
