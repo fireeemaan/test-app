@@ -51,6 +51,17 @@ jobs:
             composer update
             composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
 
+            echo ">>> Clearing old caches..."
+            ${PHP_EXEC_CMD} artisan optimize:clear
+
+            echo "Ensuring APP_KEY is set..."
+            if ! grep -q -E "^APP_KEY=\s*(\S|$)" .env || [ -z "$(grep '^APP_KEY=' .env | cut -d '=' -f2-)" ]; then
+                echo "APP_KEY is missing or empty. Generating new key..."
+                ${PHP_EXEC_CMD} artisan key:generate --force 
+            else
+                echo "APP_KEY is already set."
+            fi
+
             echo "Pulling latest changes from Git..."
             git pull origin main # Or your deployment branch
             # git remote -v
