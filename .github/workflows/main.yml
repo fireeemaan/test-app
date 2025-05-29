@@ -64,18 +64,17 @@ jobs:
             echo "Optimizing application..."
             ${PHP_EXEC_CMD} artisan optimize
 
-            echo "Setting directory permissions (example - adjust as needed!)..."
+            echo "Setting directory permissions..."
             # This is a common area for issues. Ensure 'www-data' (or your web server user)
             # can write to storage and bootstrap/cache. The deployer user needs to own files
             # or have sudo rights if changing ownership to www-data.
             # Example:
-            # sudo chown -R www-data:www-data storage bootstrap/cache
-            # sudo chmod -R 775 storage bootstrap/cache
+            sudo chown -R www-data:www-data storage bootstrap/cache
+            sudo chmod -R 775 storage bootstrap/cache
             # If using sudo, configure NOPASSWD for these specific commands for the deployer user.
 
             echo "Restarting PHP-FPM (example - adjust to your PHP version)..."
-            # This might require sudo. Example:
-            # sudo systemctl restart php8.2-fpm
+            sudo systemctl restart php8.2-fpm
 
             echo "Deactivating maintenance mode..."
             ${PHP_EXEC_CMD} artisan up
