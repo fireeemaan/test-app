@@ -3,17 +3,17 @@ name: Deploy Laravel Project
 on:
   push:
     branches:
-      - main # Or your deployment branch, e.g., master, production
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4 #Use the latest stable version
+        uses: actions/checkout@v4
 
       - name: Setup SSH
-        uses: webfactory/ssh-agent@v0.9.0 # Or a similar action like appleboy/ssh-action
+        uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
