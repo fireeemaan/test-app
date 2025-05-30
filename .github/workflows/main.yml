@@ -48,11 +48,25 @@ jobs:
             echo "Pulling latest changes from Git..."
             git pull origin main
 
-            echo "Installing frontend dependencies..."
-            npm ci
+            echo "Attempting to source NVM and install frontend dependencies..."
+            export NVM_DIR="\$HOME/.nvm"
+            
+            # Check if nvm.sh exists and source it
+            if [ -s "\$NVM_DIR/nvm.sh" ]; then
+              \. "\$NVM_DIR/nvm.sh"  # Source nvm.sh
+              echo "NVM sourced successfully."
+              echo "Node version: \$(node -v)"
+              echo "npm version: \$(npm -v)"
 
-            echo "Building frontend assets..."
-            npm run build
+              echo "Installing frontend dependencies (npm ci)..."
+              npm ci
+
+              echo "Building frontend assets (npm run build)..."
+              npm run build
+
+            else
+              echo "NVM directory or nvm.sh not found at \$NVM_DIR. Frontend dependencies NOT installed."
+            fi
             
             echo "Installing Composer dependencies..."
             # Ensure composer is available, you might need full path or add to deployer's PATH
