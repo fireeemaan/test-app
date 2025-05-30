@@ -44,15 +44,14 @@ jobs:
 
             echo "Activating maintenance mode..."
             ${PHP_EXEC_CMD} artisan down || true # Allow to fail if already down
-            echo "Installing Composer dependencies..."
+
+            echo "Pulling latest changes from Git..."
+            git pull origin main
             
+            echo "Installing Composer dependencies..."
             # Ensure composer is available, you might need full path or add to deployer's PATH
             # Example: /usr/local/bin/composer or ~/.composer/vendor/bin/composer
-            composer update
             composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
-
-            echo ">>> Clearing old caches..."
-            ${PHP_EXEC_CMD} artisan optimize:clear
 
             echo "Ensuring APP_KEY is set..."
             if ! grep -q -E "^APP_KEY=\s*(\S|$)" .env || [ -z "$(grep '^APP_KEY=' .env | cut -d '=' -f2-)" ]; then
@@ -62,27 +61,18 @@ jobs:
                 echo "APP_KEY is already set."
             fi
 
-            echo "Pulling latest changes from Git..."
-            git pull origin main # Or your deployment branch
-            # git remote -v
+            echo "Clearing old caches..."
+            ${PHP_EXEC_CMD} artisan optimize:clear
 
             echo "Running database migrations..."
             ${PHP_EXEC_CMD} artisan migrate --force
-
-            echo "Clearing caches..."
-            ${PHP_EXEC_CMD} artisan optimize:clear
 
             echo "Optimizing application..."
             ${PHP_EXEC_CMD} artisan optimize
 
             echo "Setting directory permissions..."
-            # This is a common area for issues. Ensure 'www-data' (or your web server user)
-            # can write to storage and bootstrap/cache. The deployer user needs to own files
-            # or have sudo rights if changing ownership to www-data.
-            # Example:
             sudo chown -R www-data:www-data storage bootstrap/cache
             sudo chmod -R 775 storage bootstrap/cache
-            # If using sudo, configure NOPASSWD for these specific commands for the deployer user.
 
             echo "Restarting PHP-FPM..."
             sudo systemctl restart php8.3-fpm
