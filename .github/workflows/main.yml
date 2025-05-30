@@ -47,6 +47,12 @@ jobs:
 
             echo "Pulling latest changes from Git..."
             git pull origin main
+
+            echo "Installing frontend dependencies..."
+            npm ci
+
+            echo "Building frontend assets..."
+            npm run build
             
             echo "Installing Composer dependencies..."
             # Ensure composer is available, you might need full path or add to deployer's PATH
